@@ -209,6 +209,8 @@ static DSL_DEV_Device_t dsl_devices[BSP_MAX_DEVICES];
 
 static ifx_mei_device_private_t
 	sDanube_Mei_Private[BSP_MAX_DEVICES];
+	
+static int xdata_alloc = 0;
 
 static DSL_BSP_EventCallBack_t dsl_bsp_event_callback[DSL_BSP_CB_LAST + 1];
 
@@ -1461,6 +1463,7 @@ IFX_MEI_DFEMemoryFree (DSL_DEV_Device_t * pDev, int type)
                         if (adsl_mem_info[idx].size > 0) {
                                 IFX_MEI_DMSG ("Freeing memory %p (%s)\n", adsl_mem_info[idx].org_address, free_str[adsl_mem_info[idx].type]);
                                 if ( idx == XDATA_REGISTER ) {
+                                	xdata_alloc = 0;
                                     g_xdata_addr = NULL;
                                     if ( ifx_mei_atm_showtime_exit )
                                         ifx_mei_atm_showtime_exit();
@@ -1483,6 +1486,39 @@ IFX_MEI_DFEMemoryFree (DSL_DEV_Device_t * pDev, int type)
 
         return 0;
 }
+
+/* Function to check if the DFE memory is already allocated or not. */
+static int
+IFX_MEI_DFEMemoryAlreadyAllocated (DSL_DEV_Device_t * pDev, long size,
+               int *retval)
+{
+	int idx = 0;
+	long total_size = 0;
+	smmu_mem_info_t *adsl_mem_info =
+		((ifx_mei_device_private_t *) pDev->pPriv)->adsl_mem_info;
+	int allocate_size = SDRAM_SEGMENT_SIZE;
+	int mem_allocated_flag = 1;
+
+	for (idx = 0; size > 0 && idx < MAX_BAR_REGISTERS && (mem_allocated_flag == 1); idx++) {
+		// skip bar15 for XDATA usage.
+
+		if (idx == XDATA_REGISTER)
+			continue;
+
+		if (size < SDRAM_SEGMENT_SIZE)
+			allocate_size = size;
+		else
+			allocate_size = SDRAM_SEGMENT_SIZE;
+		mem_allocated_flag = (adsl_mem_info[idx].org_address == 0) ? 0 : 1;
+
+		size -= allocate_size;
+		total_size += allocate_size;
+	}
+
+	*retval = idx;
+	return mem_allocated_flag;
+}
+
 static int
 IFX_MEI_DFEMemoryAlloc (DSL_DEV_Device_t * pDev, long size)
 {
@@ -1631,14 +1667,22 @@ DSL_BSP_FWDownload (DSL_DEV_Device_t * pDev, const char *buf,
 		// check if arc is halt
 		IFX_MEI_ResetARC (pDev);
 		IFX_MEI_HaltArc (pDev);
+		
+		/* Only allocate memory for firmware if not already allocated. */
+		if (!IFX_MEI_DFEMemoryAlreadyAllocated(pDev, DSL_DEV_PRIVATE(pDev)->image_size, &retval))
+		{
+			IFX_MEI_DFEMemoryFree (pDev, FREE_ALL);	//free all
 
-		IFX_MEI_DFEMemoryFree (pDev, FREE_ALL);	//free all
-
-		retval = IFX_MEI_DFEMemoryAlloc (pDev,  DSL_DEV_PRIVATE(pDev)->image_size);
-		if (retval < 0) {
-			IFX_MEI_EMSG ("Error: No memory space left.\n");
-			goto error;
+			retval = IFX_MEI_DFEMemoryAlloc (pDev,  DSL_DEV_PRIVATE(pDev)->image_size);
+			if (retval < 0) {
+				IFX_MEI_EMSG ("Error: No memory space left.\n");
+				goto error;
+			}
+		} else {
+			for (idx = 0; idx < retval; idx++)
+				adsl_mem_info[idx].nCopy = 0;
 		}
+      
 		for (idx = 0; idx < retval; idx++) {
 			//skip XDATA register
 			if (idx == XDATA_REGISTER)
@@ -1653,34 +1697,39 @@ DSL_BSP_FWDownload (DSL_DEV_Device_t * pDev, const char *buf,
 		DSL_DEV_PRIVATE(pDev)->img_hdr =
 			(ARC_IMG_HDR *) adsl_mem_info[0].address;
 
-		org_mem_ptr = kmalloc (SDRAM_SEGMENT_SIZE, GFP_KERNEL);
-		if (org_mem_ptr == NULL) {
-			IFX_MEI_EMSG ("kmalloc memory fail!\n");
-			retval = -ENOMEM;
-			goto error;
-		}
-		
-		if (((unsigned long)org_mem_ptr) & (1023)) {
-			/* Pointer not 1k aligned, so free it and allocate a larger chunk
-			 * for further alignment.
-			 */
-			kfree(org_mem_ptr);
-			org_mem_ptr = kmalloc (SDRAM_SEGMENT_SIZE + 1024, GFP_KERNEL);
+		/* Only allocate XDATA register if not already allocated. */
+		if (xdata_alloc == 0)
+		{
+			org_mem_ptr = kmalloc (SDRAM_SEGMENT_SIZE, GFP_KERNEL);
 			if (org_mem_ptr == NULL) {
 				IFX_MEI_EMSG ("kmalloc memory fail!\n");
 				retval = -ENOMEM;
 				goto error;
 			}
-			adsl_mem_info[XDATA_REGISTER].address =
-				(char *) ((unsigned long) (org_mem_ptr + 1023) & ~(1024 -1));
-		} else {
-			adsl_mem_info[XDATA_REGISTER].address = org_mem_ptr;
-		}
 		
-		adsl_mem_info[XDATA_REGISTER].org_address = org_mem_ptr;
-		adsl_mem_info[XDATA_REGISTER].size = SDRAM_SEGMENT_SIZE;
+			if (((unsigned long)org_mem_ptr) & (1023)) {
+				/* Pointer not 1k aligned, so free it and allocate a larger chunk
+				 * for further alignment.
+				 */
+				kfree(org_mem_ptr);
+				org_mem_ptr = kmalloc (SDRAM_SEGMENT_SIZE + 1024, GFP_KERNEL);
+				if (org_mem_ptr == NULL) {
+					IFX_MEI_EMSG ("kmalloc memory fail!\n");
+					retval = -ENOMEM;
+					goto error;
+				}
+				adsl_mem_info[XDATA_REGISTER].address =
+					(char *) ((unsigned long) (org_mem_ptr + 1023) & ~(1024 -1));
+			} else {
+				adsl_mem_info[XDATA_REGISTER].address = org_mem_ptr;
+			}
+		
+			adsl_mem_info[XDATA_REGISTER].org_address = org_mem_ptr;
+			adsl_mem_info[XDATA_REGISTER].size = SDRAM_SEGMENT_SIZE;
+			xdata_alloc = 1;
 
-		adsl_mem_info[XDATA_REGISTER].type = FREE_RELOAD;
+			adsl_mem_info[XDATA_REGISTER].type = FREE_RELOAD;
+		}
 		IFX_MEI_DMSG("-> IFX_MEI_BarUpdate()\n");
 		IFX_MEI_BarUpdate (pDev, (DSL_DEV_PRIVATE(pDev)->nBar));
 	}
