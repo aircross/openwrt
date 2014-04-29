@@ -39,6 +39,7 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_MAC80211_DEBUGFS \
 	CONFIG_PACKAGE_MAC80211_MESH \
 	CONFIG_PACKAGE_ATH_DEBUG \
+	CONFIG_PACKAGE_ATH_DFS \
 	CONFIG_PACKAGE_B43_DEBUG \
 	CONFIG_PACKAGE_B43_PIO \
 	CONFIG_PACKAGE_B43_N_PHY \
@@ -321,7 +322,7 @@ endef
 
 define KernelPackage/rt2800-soc
 $(call KernelPackage/rt2x00/Default)
-  DEPENDS += @(TARGET_ramips_rt288x||TARGET_ramips_rt305x||TARGET_ramips_rt3883) +kmod-rt2800-mmio +kmod-rt2800-lib
+  DEPENDS += @(TARGET_ramips_rt288x||TARGET_ramips_rt305x) +kmod-rt2800-mmio +kmod-rt2800-lib
   TITLE += (RT28xx/RT3xxx SoC)
   FILES := \
 	$(PKG_BUILD_DIR)/drivers/net/wireless/rt2x00/rt2x00soc.ko \
@@ -509,6 +510,15 @@ define KernelPackage/ath/config
 		help
 		  Say Y, if you want to debug atheros wireless drivers.
 		  Right now only ath9k makes use of this.
+
+	config PACKAGE_ATH_DFS
+		bool "Enable DFS support"
+		help
+		  Dynamic frequency selection (DFS) is required for most of the 5 GHz band
+		  channels in Europe, US, and Japan.
+		
+		  Select this option if you want to use such channels.
+
   endif
 endef
 
@@ -1378,6 +1388,7 @@ config-$(call config_package,lib80211) += LIB80211 LIB80211_CRYPT_WEP LIB80211_C
 
 config-$(call config_package,ath) += ATH_CARDS ATH_COMMON
 config-$(CONFIG_PACKAGE_ATH_DEBUG) += ATH_DEBUG ATH10K_DEBUG
+config-$(CONFIG_PACKAGE_ATH_DFS) += CFG80211_CERTIFICATION_ONUS ATH9K_DFS_CERTIFIED ATH10K_DFS_CERTIFIED
 
 config-$(call config_package,ath9k) += ATH9K
 config-$(call config_package,ath9k-common) += ATH9K_COMMON
