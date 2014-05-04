@@ -22,10 +22,15 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
 
 define Package/uqmi
-  SECTION:=base
-  CATEGORY:=Base system
-  DEPENDS:=+libuci +libubus +ubus +ubusd +jshn +libubox
-  TITLE:=uQMI
+  SECTION:=net
+  CATEGORY:=Network
+  DEPENDS:=+libubox +libblobmsg-json
+  TITLE:=Control utility for mobile broadband modems
+endef
+
+define Package/uqmi/description
+  uqmi is a command line tool for controlling mobile broadband modems using 
+  the QMI-protocol.
 endef
 
 TARGET_CFLAGS += \
