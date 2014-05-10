@@ -19,8 +19,8 @@ proto_qmi_init_config() {
 proto_qmi_setup() {
 	local interface="$1"
 
-	local device apn auth username password pincode cid pdh
-	json_get_vars device apn auth username password pincode
+	local device apn auth username password pincode delay modes cid pdh
+	json_get_vars device apn auth username password pincode delay modes
 
 	[ -n "$device" ] || {
 		logger -p daemon.err -t "qmi[$$]" "No control device specified"
@@ -34,6 +34,8 @@ proto_qmi_setup() {
 		proto_block_restart "$interface"
 		return 1
 	}
+	
+	[ -n "$delay" ] && sleep "$delay"
 	
 	while ! uqmi -s -d "$device" --get-pin-status > /dev/null; do
 		sleep 1;
@@ -60,12 +62,26 @@ proto_qmi_setup() {
 		sleep 1;
 	done
 	
+	[ -n "$modes" ] && uqmi -s -d "$device" --set-network-modes "$modes"
+	
 	logger -p daemon.info -t "qmi[$$]" "Starting network $apn"
 	cid=`uqmi -s -d "$device" --get-client-id wds`
+	[ $? -ne 0 ] && {
+		logger -p daemon.err -t "qmi[$$]" "Unable to obtain client ID"
+		proto_notify_error "$interface" NO_CID
+		proto_block_restart "$interface"
+		return 1
+	}
 	pdh=`uqmi -s -d "$device" --set-client-id wds,"$cid" --start-network "$apn" \
 	${auth:+--auth-type $auth} \
 	${username:+--username $username} \
 	${password:+--password $password}`
+	[ $? -ne 0 ] && {
+		logger -p daemon.err -t "qmi[$$]" "Unable to connect, check APN and authentication"
+		proto_notify_error "$interface" NO_PDH
+		proto_block_restart "$interface"
+		return 1
+	}
 	
 	uci_set_state network $interface cid "$cid"
 	uci_set_state network $interface pdh "$pdh"
