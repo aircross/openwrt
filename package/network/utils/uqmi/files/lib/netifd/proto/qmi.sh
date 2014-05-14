@@ -14,6 +14,8 @@ proto_qmi_init_config() {
 	proto_config_add_string username
 	proto_config_add_string password
 	proto_config_add_string pincode
+	proto_config_add_string delay
+	proto_config_add_string modes
 }
 
 proto_qmi_setup() {
