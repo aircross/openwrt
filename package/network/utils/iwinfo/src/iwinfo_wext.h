@@ -23,7 +23,7 @@
 
 #include "iwinfo.h"
 #include "iwinfo/utils.h"
-#include "iwinfo/api/wext.h"
+#include "api/wext.h"
 
 
 typedef struct stream_descr
@@ -376,5 +376,7 @@ static const unsigned int standard_event_num =
 
 #define	IW_IE_CYPHER_NUM	8
 #define	IW_IE_KEY_MGMT_NUM	3
+
+int wext_get_scanlist(const char *ifname, char *buf, int *len);
 
 #endif

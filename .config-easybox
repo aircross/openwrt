@@ -123,6 +123,7 @@ CONFIG_BIG_ENDIAN=y
 CONFIG_USES_DEVICETREE=y
 CONFIG_USES_SQUASHFS=y
 CONFIG_USES_JFFS2_NAND=y
+CONFIG_USES_UBIFS=y
 CONFIG_HAS_MIPS16=y
 CONFIG_mips=y
 CONFIG_ARCH="mips"
@@ -146,15 +147,21 @@ CONFIG_EXTERNAL_CPIO=""
 # CONFIG_TARGET_ROOTFS_JFFS2 is not set
 CONFIG_TARGET_ROOTFS_JFFS2_NAND=y
 CONFIG_TARGET_ROOTFS_SQUASHFS=y
+CONFIG_TARGET_ROOTFS_UBIFS=y
+CONFIG_TARGET_UBIFS_COMPRESSION_NONE=y
+# CONFIG_TARGET_UBIFS_COMPRESSION_LZO is not set
+# CONFIG_TARGET_UBIFS_COMPRESSION_ZLIB is not set
 CONFIG_TARGET_UBIFS_FREE_SPACE_FIXUP=y
 CONFIG_TARGET_UBIFS_JOURNAL_SIZE=""
 
 #
 # Image Options
 #
+# CONFIG_TARGET_ROOTFS_INCLUDE_KERNEL is not set
 CONFIG_TARGET_ROOTFS_INCLUDE_UIMAGE=y
 CONFIG_TARGET_ROOTFS_INCLUDE_ZIMAGE=y
 CONFIG_TARGET_ROOTFS_INCLUDE_FIT=y
+# CONFIG_TARGET_ROOTFS_INCLUDE_DTB is not set
 
 #
 # Global build settings
@@ -1226,48 +1233,6 @@ CONFIG_PACKAGE_uci=y
 # CONFIG_PACKAGE_uacctd-sqlite is not set
 
 #
-# webif
-#
-# CONFIG_PACKAGE_webif is not set
-# CONFIG_PACKAGE_webif-applications is not set
-# CONFIG_PACKAGE_webif-batman is not set
-# CONFIG_PACKAGE_webif-fonheartbeat is not set
-# CONFIG_PACKAGE_webif-freeloader is not set
-# CONFIG_PACKAGE_webif-freeloader-lang-cs is not set
-# CONFIG_PACKAGE_webif-hotspot is not set
-# CONFIG_PACKAGE_webif-iw-lua is not set
-# CONFIG_PACKAGE_webif-iw-lua-chillispot is not set
-# CONFIG_PACKAGE_webif-iw-lua-openssl is not set
-# CONFIG_PACKAGE_webif-iw-lua-openvpn is not set
-# CONFIG_PACKAGE_webif-lang-ca is not set
-# CONFIG_PACKAGE_webif-lang-cs is not set
-# CONFIG_PACKAGE_webif-lang-da is not set
-# CONFIG_PACKAGE_webif-lang-de is not set
-# CONFIG_PACKAGE_webif-lang-ee is not set
-# CONFIG_PACKAGE_webif-lang-es is not set
-# CONFIG_PACKAGE_webif-lang-fr is not set
-# CONFIG_PACKAGE_webif-lang-hr is not set
-# CONFIG_PACKAGE_webif-lang-hu is not set
-# CONFIG_PACKAGE_webif-lang-it is not set
-# CONFIG_PACKAGE_webif-lang-nl is not set
-# CONFIG_PACKAGE_webif-lang-no is not set
-# CONFIG_PACKAGE_webif-lang-pl is not set
-# CONFIG_PACKAGE_webif-lang-pt is not set
-# CONFIG_PACKAGE_webif-lang-ru is not set
-# CONFIG_PACKAGE_webif-lang-sq is not set
-# CONFIG_PACKAGE_webif-lang-sv is not set
-# CONFIG_PACKAGE_webif-lang-uk is not set
-# CONFIG_PACKAGE_webif-lang-zh is not set
-# CONFIG_PACKAGE_webif-mesh is not set
-# CONFIG_PACKAGE_webif-netsukuku is not set
-# CONFIG_PACKAGE_webif-theme-clubman is not set
-# CONFIG_PACKAGE_webif-theme-sedky1 is not set
-# CONFIG_PACKAGE_webif-theme-xwrt is not set
-# CONFIG_PACKAGE_webif-theme-xwrt-mini is not set
-# CONFIG_PACKAGE_webif-theme-zephyr is not set
-# CONFIG_PACKAGE_webif-vpn is not set
-
-#
 # zabbix
 #
 # CONFIG_PACKAGE_zabbix-agent is not set
@@ -1301,32 +1266,9 @@ CONFIG_PACKAGE_uci=y
 #
 # Boot Loaders
 #
-# CONFIG_PACKAGE_uboot-lantiq-acmp252_nor is not set
-# CONFIG_PACKAGE_uboot-lantiq-acmp252_ram is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv4519pw_brn is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv4519pw_nor is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv4519pw_ram is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv7510pw_brn is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv7510pw_nor is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv7510pw_ram is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv7518pw_brn is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv7518pw_nor is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv7518pw_ram is not set
 # CONFIG_PACKAGE_uboot-lantiq-arv752dpw22_brn is not set
 # CONFIG_PACKAGE_uboot-lantiq-arv752dpw22_nor is not set
 # CONFIG_PACKAGE_uboot-lantiq-arv752dpw22_ram is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv752dpw_brn is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv752dpw_nor is not set
-# CONFIG_PACKAGE_uboot-lantiq-arv752dpw_ram is not set
-# CONFIG_PACKAGE_uboot-lantiq-easy50712_nor is not set
-# CONFIG_PACKAGE_uboot-lantiq-easy50712_norspl is not set
-# CONFIG_PACKAGE_uboot-lantiq-easy50712_ram is not set
-# CONFIG_PACKAGE_uboot-lantiq-easy80920_nor is not set
-# CONFIG_PACKAGE_uboot-lantiq-easy80920_norspl is not set
-# CONFIG_PACKAGE_uboot-lantiq-easy80920_ram is not set
-# CONFIG_PACKAGE_uboot-lantiq-easy80920_sfspl is not set
-# CONFIG_PACKAGE_uboot-lantiq-gigasx76x_nor is not set
-# CONFIG_PACKAGE_uboot-lantiq-gigasx76x_ram is not set
 
 #
 # Development
@@ -1356,6 +1298,7 @@ CONFIG_PACKAGE_uci=y
 # Firmware
 #
 # CONFIG_PACKAGE_r8169-firmware is not set
+# CONFIG_PACKAGE_r8188eu-firmware is not set
 
 #
 # Kernel modules
@@ -1393,6 +1336,7 @@ CONFIG_PACKAGE_kmod-crypto-core=y
 # CONFIG_PACKAGE_kmod-crypto-deflate is not set
 # CONFIG_PACKAGE_kmod-crypto-des is not set
 # CONFIG_PACKAGE_kmod-crypto-ecb is not set
+# CONFIG_PACKAGE_kmod-crypto-fcrypt is not set
 CONFIG_PACKAGE_kmod-crypto-hash=y
 # CONFIG_PACKAGE_kmod-crypto-hmac is not set
 # CONFIG_PACKAGE_kmod-crypto-hw-geode is not set
@@ -1407,6 +1351,7 @@ CONFIG_PACKAGE_kmod-crypto-hash=y
 # CONFIG_PACKAGE_kmod-crypto-misc is not set
 # CONFIG_PACKAGE_kmod-crypto-null is not set
 # CONFIG_PACKAGE_kmod-crypto-ocf is not set
+# CONFIG_PACKAGE_kmod-crypto-pcbc is not set
 # CONFIG_PACKAGE_kmod-crypto-pcompress is not set
 # CONFIG_PACKAGE_kmod-crypto-rng is not set
 # CONFIG_PACKAGE_kmod-crypto-sha1 is not set
@@ -1422,12 +1367,15 @@ CONFIG_PACKAGE_kmod-crypto-hash=y
 #
 # Filesystems
 #
+# CONFIG_PACKAGE_kmod-fs-afs is not set
 # CONFIG_PACKAGE_kmod-fs-autofs4 is not set
 # CONFIG_PACKAGE_kmod-fs-btrfs is not set
 # CONFIG_PACKAGE_kmod-fs-cifs is not set
 # CONFIG_PACKAGE_kmod-fs-configfs is not set
+# CONFIG_PACKAGE_kmod-fs-cramfs is not set
 # CONFIG_PACKAGE_kmod-fs-exportfs is not set
 CONFIG_PACKAGE_kmod-fs-ext4=y
+# CONFIG_PACKAGE_kmod-fs-fscache is not set
 # CONFIG_PACKAGE_kmod-fs-hfs is not set
 # CONFIG_PACKAGE_kmod-fs-hfsplus is not set
 # CONFIG_PACKAGE_kmod-fs-isofs is not set
@@ -1654,6 +1602,7 @@ CONFIG_PACKAGE_kmod-atm=y
 # CONFIG_PACKAGE_kmod-bonding is not set
 CONFIG_PACKAGE_kmod-bridge=y
 # CONFIG_PACKAGE_kmod-capi is not set
+# CONFIG_PACKAGE_kmod-dnsresolver is not set
 # CONFIG_PACKAGE_kmod-gre is not set
 # CONFIG_PACKAGE_kmod-gre6 is not set
 # CONFIG_PACKAGE_kmod-ip6-tunnel is not set
@@ -1680,6 +1629,7 @@ CONFIG_PACKAGE_kmod-pppoe=y
 # CONFIG_PACKAGE_kmod-pppol2tp is not set
 CONFIG_PACKAGE_kmod-pppox=y
 # CONFIG_PACKAGE_kmod-pptp is not set
+# CONFIG_PACKAGE_kmod-rxrpc is not set
 # CONFIG_PACKAGE_kmod-sched is not set
 CONFIG_PACKAGE_kmod-sched-connmark=y
 CONFIG_PACKAGE_kmod-sched-core=y
@@ -1718,6 +1668,7 @@ CONFIG_PACKAGE_kmod-gpio-button-hotplug=y
 # CONFIG_PACKAGE_kmod-nand is not set
 # CONFIG_PACKAGE_kmod-nandsim is not set
 # CONFIG_PACKAGE_kmod-pps is not set
+# CONFIG_PACKAGE_kmod-pps-gpio is not set
 # CONFIG_PACKAGE_kmod-ptp is not set
 # CONFIG_PACKAGE_kmod-pwm is not set
 # CONFIG_PACKAGE_kmod-pwm-gpio is not set
@@ -1764,9 +1715,11 @@ CONFIG_PACKAGE_kmod-usb-core=y
 # CONFIG_PACKAGE_kmod-usb-hid is not set
 CONFIG_PACKAGE_kmod-usb-net=y
 # CONFIG_PACKAGE_kmod-usb-net-asix is not set
+# CONFIG_PACKAGE_kmod-usb-net-cdc-eem is not set
 CONFIG_PACKAGE_kmod-usb-net-cdc-ether=y
 CONFIG_PACKAGE_kmod-usb-net-cdc-mbim=y
 CONFIG_PACKAGE_kmod-usb-net-cdc-ncm=y
+# CONFIG_PACKAGE_kmod-usb-net-cdc-subset is not set
 # CONFIG_PACKAGE_kmod-usb-net-dm9601-ether is not set
 # CONFIG_PACKAGE_kmod-usb-net-hso is not set
 # CONFIG_PACKAGE_kmod-usb-net-ipheth is not set
@@ -1994,6 +1947,7 @@ CONFIG_PACKAGE_libiwinfo-lua=y
 # CONFIG_PACKAGE_lsqlite3 is not set
 CONFIG_PACKAGE_lua=y
 # CONFIG_PACKAGE_lua-examples is not set
+# CONFIG_PACKAGE_luabitop is not set
 # CONFIG_PACKAGE_luac is not set
 # CONFIG_PACKAGE_luacurl is not set
 # CONFIG_PACKAGE_luaexpat is not set
@@ -2413,13 +2367,13 @@ CONFIG_PACKAGE_libubus-lua=y
 CONFIG_PACKAGE_libuci=y
 CONFIG_PACKAGE_libuci-lua=y
 # CONFIG_PACKAGE_libucl is not set
+# CONFIG_PACKAGE_libuclient is not set
 # CONFIG_PACKAGE_libugpio is not set
 # CONFIG_PACKAGE_libunbound is not set
 # CONFIG_PACKAGE_libupnp is not set
 # CONFIG_PACKAGE_liburcu is not set
 CONFIG_PACKAGE_libusb-1.0=y
 # CONFIG_PACKAGE_libusb-compat is not set
-# CONFIG_PACKAGE_libusbmuxd is not set
 # CONFIG_PACKAGE_libustream-cyassl is not set
 # CONFIG_PACKAGE_libustream-openssl is not set
 # CONFIG_PACKAGE_libustream-polarssl is not set
@@ -2803,6 +2757,7 @@ CONFIG_PACKAGE_motion=y
 # CONFIG_PACKAGE_ctorrent is not set
 # CONFIG_PACKAGE_ctorrent-nossl is not set
 # CONFIG_PACKAGE_rtorrent is not set
+# CONFIG_PACKAGE_rtorrent-rpc is not set
 # CONFIG_PACKAGE_transmission-daemon is not set
 # CONFIG_PACKAGE_transmission-remote is not set
 
@@ -3341,7 +3296,6 @@ CONFIG_PACKAGE_tc=y
 # CONFIG_PACKAGE_strongswan-mod-kernel-libipsec is not set
 # CONFIG_PACKAGE_strongswan-mod-kernel-netlink is not set
 # CONFIG_PACKAGE_strongswan-mod-kernel-pfkey is not set
-# CONFIG_PACKAGE_strongswan-mod-kernel-pfroute is not set
 # CONFIG_PACKAGE_strongswan-mod-ldap is not set
 # CONFIG_PACKAGE_strongswan-mod-led is not set
 # CONFIG_PACKAGE_strongswan-mod-load-tester is not set
@@ -3518,6 +3472,7 @@ CONFIG_PACKAGE_chat=y
 # CONFIG_PACKAGE_ds-lite is not set
 # CONFIG_PACKAGE_dsniff is not set
 # CONFIG_PACKAGE_e169-stats is not set
+# CONFIG_PACKAGE_eapol-test is not set
 # CONFIG_PACKAGE_elinks is not set
 # CONFIG_PACKAGE_etherwake is not set
 # CONFIG_PACKAGE_ethtool is not set
@@ -3575,9 +3530,9 @@ CONFIG_PACKAGE_iw=y
 # CONFIG_PACKAGE_lispd is not set
 # CONFIG_PACKAGE_lsm is not set
 CONFIG_PACKAGE_ltq-adsl-app=y
-# CONFIG_PACKAGE_m-route is not set
 # CONFIG_PACKAGE_mac-to-devinfo is not set
 # CONFIG_PACKAGE_madwimax is not set
+# CONFIG_PACKAGE_map is not set
 # CONFIG_PACKAGE_memcached is not set
 # CONFIG_PACKAGE_mgen is not set
 # CONFIG_PACKAGE_mii-tool is not set
@@ -3593,6 +3548,7 @@ CONFIG_PACKAGE_ltq-adsl-app=y
 # CONFIG_PACKAGE_mvprelay is not set
 # CONFIG_PACKAGE_nbd is not set
 # CONFIG_PACKAGE_nbtscan is not set
+# CONFIG_PACKAGE_ncm is not set
 # CONFIG_PACKAGE_ndppd is not set
 # CONFIG_PACKAGE_net-tools-arp is not set
 # CONFIG_PACKAGE_net-tools-hostname is not set
@@ -3619,6 +3575,7 @@ CONFIG_PACKAGE_ltq-adsl-app=y
 CONFIG_PACKAGE_odhcp6c=y
 CONFIG_PACKAGE_odhcp6c_ext_prefix_class=0
 CONFIG_PACKAGE_odhcp6c_ext_cer_id=0
+CONFIG_PACKAGE_odhcp6c_ext_s46=0
 # CONFIG_PACKAGE_odhcpd is not set
 # CONFIG_PACKAGE_oidentd is not set
 # CONFIG_PACKAGE_openldap-server is not set
@@ -3692,11 +3649,13 @@ CONFIG_PACKAGE_SAMBA_MAX_DEBUG_LEVEL=-1
 # CONFIG_PACKAGE_ttcp is not set
 # CONFIG_PACKAGE_tunslip6 is not set
 # CONFIG_PACKAGE_ucarp is not set
+# CONFIG_PACKAGE_uclient-fetch is not set
 # CONFIG_PACKAGE_ucspi-tcp is not set
 # CONFIG_PACKAGE_udpcast is not set
 # CONFIG_PACKAGE_udpxy is not set
 # CONFIG_PACKAGE_ulogd is not set
 # CONFIG_PACKAGE_uob-nomad is not set
+# CONFIG_PACKAGE_uqmi is not set
 # CONFIG_PACKAGE_usbip is not set
 # CONFIG_PACKAGE_vblade is not set
 # CONFIG_PACKAGE_veth is not set
@@ -4018,7 +3977,6 @@ CONFIG_PACKAGE_libjson-script=y
 # CONFIG_PACKAGE_lmbench is not set
 # CONFIG_PACKAGE_logger is not set
 # CONFIG_PACKAGE_logrotate is not set
-# CONFIG_PACKAGE_logtrigger is not set
 # CONFIG_PACKAGE_look is not set
 # CONFIG_PACKAGE_losetup is not set
 # CONFIG_PACKAGE_lrzsz is not set
