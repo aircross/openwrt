@@ -1,13 +1,10 @@
 #!/bin/sh
-INCLUDE_ONLY=1
 
 . /lib/functions.sh
 . ../netifd-proto.sh
-. ./dhcp.sh
 init_proto "$@"
 
 proto_qmi_init_config() {
-	proto_dhcp_init_config
 	proto_config_add_string "device:device"
 	proto_config_add_string apn
 	proto_config_add_string auth
@@ -20,7 +17,7 @@ proto_qmi_init_config() {
 
 proto_qmi_setup() {
 	local interface="$1"
-
+	
 	local device apn auth username password pincode delay modes cid pdh
 	json_get_vars device apn auth username password pincode delay modes
 
@@ -39,13 +36,13 @@ proto_qmi_setup() {
 	
 	[ -n "$delay" ] && sleep "$delay"
 	
-	while ! uqmi -s -d "$device" --get-pin-status > /dev/null; do
+	while uqmi -s -d "$device" --get-pin-status | grep '"UIM uninitialized"' > /dev/null; do
 		sleep 1;
 	done
 	
 	[ -n "$pincode" ] && {
 		uqmi -s -d "$device" --verify-pin1 "$pincode" || {
-			logger -p daemon.err -t "qmi[$$]" "Incorrect PIN"
+			logger -p daemon.err -t "qmi[$$]" "Unable to verify PIN"
 			proto_notify_error "$interface" PIN_FAILED
 			proto_block_restart "$interface"
 			return 1
@@ -60,8 +57,8 @@ proto_qmi_setup() {
 	}
 	
 	logger -p daemon.info -t "qmi[$$]" "Waiting for network registration"
-	while ! uqmi -s -d "$device" --get-serving-system | grep '"registered"' > /dev/null; do
-		sleep 1;
+	while uqmi -s -d "$device" --get-serving-system | grep '"searching"' > /dev/null; do
+		sleep 5;
 	done
 	
 	[ -n "$modes" ] && uqmi -s -d "$device" --set-network-modes "$modes"
@@ -74,6 +71,8 @@ proto_qmi_setup() {
 		proto_block_restart "$interface"
 		return 1
 	}
+	uci_set_state network $interface cid "$cid"
+	
 	pdh=`uqmi -s -d "$device" --set-client-id wds,"$cid" --start-network "$apn" \
 	${auth:+--auth-type $auth} \
 	${username:+--username $username} \
@@ -84,25 +83,37 @@ proto_qmi_setup() {
 		proto_block_restart "$interface"
 		return 1
 	}
-	
-	uci_set_state network $interface cid "$cid"
 	uci_set_state network $interface pdh "$pdh"
 	
-	while ! uqmi -s -d "$device" --get-data-status | grep '"connected"' > /dev/null; do
-		sleep 1;
-	done
+	if ! uqmi -s -d "$device" --get-data-status | grep '"connected"' > /dev/null; then
+		logger -p daemon.err -t "qmi[$$]" "Connection lost"
+		proto_notify_error "$interface" NOT_CONNECTED
+		proto_block_restart "$interface"
+		return 1
+	fi
 	
 	logger -p daemon.info -t "qmi[$$]" "Connected, starting DHCP"
-	proto_dhcp_setup "$@"
-}
-
-proto_qmi_renew() {
-	proto_dhcp_renew "$@"
+	proto_init_update "*" 1
+	proto_send_update "$interface"
+	
+	json_init
+	json_add_string name "${interface}_dhcp"
+	json_add_string ifname "@$interface"
+	json_add_string proto "dhcp"
+	json_close_object
+	ubus call network add_dynamic "$(json_dump)"
+	
+	json_init
+	json_add_string name "${interface}_dhcpv6"
+	json_add_string ifname "@$interface"
+	json_add_string proto "dhcpv6"
+	json_close_object
+	ubus call network add_dynamic "$(json_dump)"
 }
 
 proto_qmi_teardown() {
 	local interface="$1"
-
+	
 	local device
 	json_get_vars device
 	local cid=$(uci_get_state network $interface cid)
@@ -117,7 +128,9 @@ proto_qmi_teardown() {
 		uqmi -s -d "$device" --set-client-id wds,"$cid" --release-client-id wds
 		uci_revert_state network $interface cid
 	}
-	proto_kill_command "$interface"
+	
+	proto_init_update "*" 0
+	proto_send_update "$interface"
 }
 
 add_protocol qmi

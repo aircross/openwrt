@@ -1,10 +1,8 @@
 #!/bin/sh
 
-[ -n "$INCLUDE_ONLY" ] || {
-	. /lib/functions.sh
-	. ../netifd-proto.sh
-	init_proto "$@"
-}
+. /lib/functions.sh
+. ../netifd-proto.sh
+init_proto "$@"
 
 proto_dhcp_init_config() {
 	renew_handler=1
@@ -67,7 +65,5 @@ proto_dhcp_teardown() {
 	proto_kill_command "$interface"
 }
 
-[ -n "$INCLUDE_ONLY" ] || {
-	add_protocol dhcp
-}
+add_protocol dhcp
 
