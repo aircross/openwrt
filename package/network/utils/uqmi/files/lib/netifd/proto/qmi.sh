@@ -61,7 +61,7 @@ proto_qmi_setup() {
 		sleep 5;
 	done
 	
-	[ -n "$modes" ] && uqmi -s -d "$device" --set-network-modes "$modes"
+	[ -n "$modes" ] && uqmi -s -d "$device" --set-network-modes "$modes"
 	
 	logger -p daemon.info -t "qmi[$$]" "Starting network $apn"
 	cid=`uqmi -s -d "$device" --get-client-id wds`
