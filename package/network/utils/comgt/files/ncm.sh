@@ -5,6 +5,8 @@
 init_proto "$@"
 
 proto_ncm_init_config() {
+	no_device=1
+	available=1
 	proto_config_add_string "device:device"
 	proto_config_add_string apn
 	proto_config_add_string auth
@@ -29,10 +31,8 @@ proto_ncm_setup() {
 		proto_block_restart "$interface"
 		return 1
 	}
-	[ -c "$device" ] || {
-		logger -p daemon.err -t "ncm[$$]" "The specified control device does not exist"
-		proto_notify_error "$interface" NO_DEVICE
-		proto_block_restart "$interface"
+	[ -e "$device" ] || {
+		proto_set_available "$interface" 0
 		return 1
 	}
 	[ -n "$apn" ] || {
@@ -46,15 +46,6 @@ proto_ncm_setup() {
 
 	cardinfo=`gcom -d "$device" -s /etc/gcom/getcardinfo.gcom`
 
-	[ -n "$pincode" ] && {
-		PINCODE="$pincode" gcom -d "$device" -s /etc/gcom/setpin.gcom || {
-			logger -p daemon.err -t "ncm[$$]" "Unable to verify PIN"
-			proto_notify_error "$interface" PIN_FAILED
-			proto_block_restart "$interface"
-			return 1
-		}
-	}
-
 	if echo "$cardinfo" | grep -qi huawei; then
 		case "$auth" in
 			pap) authtype=1;;
@@ -67,15 +58,24 @@ proto_ncm_setup() {
 			*) mode="\"00\"";;
 		esac
 
+		initialize="ATQ0 V1 E1 S0=0"
 		setmode="AT^SYSCFGEX=${mode},3fffffff,2,4,7fffffffffffffff,,"
 		connect="AT^NDISDUP=1,1,\"${apn}\"${username:+,\"$username\"}${password:+,\"$password\"}${authtype:+,$authtype}"
 	else
-		logger -p daemon.info -t "ncm[$$]" "Device is not supported."
+		logger -p daemon.info -t "ncm[$$]" "Device is not supported"
 		proto_notify_error "$interface" UNSUPPORTED_DEVICE
 		proto_block_restart "$interface"
 		return 1
 	fi
 
+	[ -n "$pincode" ] && {
+		PINCODE="$pincode" gcom -d "$device" -s /etc/gcom/setpin.gcom || {
+			logger -p daemon.err -t "ncm[$$]" "Unable to verify PIN"
+			proto_notify_error "$interface" PIN_FAILED
+			proto_block_restart "$interface"
+			return 1
+		}
+	}
 	[ -n "$initialize" ] && {
 		COMMAND="$initialize" gcom -d "$device" -s /etc/gcom/runcommand.gcom
 		[ $? -ne 0 ] && {
@@ -137,7 +137,7 @@ proto_ncm_teardown() {
 	if echo "$cardinfo" | grep -qi huawei; then
 		disconnect="AT^NDISDUP=1,0"
 	else
-		logger -p daemon.info -t "ncm[$$]" "Device is not supported."
+		logger -p daemon.info -t "ncm[$$]" "Device is not supported"
 		proto_notify_error "$interface" UNSUPPORTED_DEVICE
 		proto_block_restart "$interface"
 		return 1
@@ -156,3 +156,4 @@ proto_ncm_teardown() {
 }
 
 add_protocol ncm
+
